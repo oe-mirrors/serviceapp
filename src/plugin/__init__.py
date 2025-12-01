@@ -1,4 +1,4 @@
-from gettext import bindtextdomain, dgettext, dngettext, gettext
+from gettext import bindtextdomain, dgettext, dngettext, gettext, ngettext
 
 from Components.Language import language
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
@@ -21,7 +21,7 @@ def _(txt):
 def _ngettext(singular, plural, n):
 	trans = dngettext(PluginLanguageDomain, singular, plural, n)
 	if trans in (singular, plural):
-		trans = gettext.ngettext(singular, plural, n)
+		trans = ngettext(singular, plural, n)
 	return trans
 
 

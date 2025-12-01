@@ -156,7 +156,7 @@ class ServiceAppSettings(Setup):
 	def __init__(self, session):
 		self.indent = "   "
 		self.spacer = ("---",)
-		Setup.__init__(self, session)
+		Setup.__init__(self, session, "serviceapp")
 		self.title = _("ServiceApp")
 
 	def gstplayer_options(self, gstplayer_options_cfg, config_list):

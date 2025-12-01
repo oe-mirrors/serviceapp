@@ -35,6 +35,7 @@ EXTEPLAYER3_VERSION = None
 
 config.plugins.serviceapp = ConfigSubsection()
 config_serviceapp = config.plugins.serviceapp
+config_serviceapp.debug = ConfigBoolean(default=False)
 
 config_serviceapp.servicemp3 = ConfigSubsection()
 config_serviceapp.servicemp3.replace = ConfigBoolean(default=False, descriptions={False: _("original"), True: _("serviceapp")})
@@ -219,6 +220,7 @@ class ServiceAppSettings(Setup):
 		config_list.append(self.spacer)
 		config_list.append((_("ServiceExtEplayer3 (%s)" % str(serviceapp_client.ID_SERVICEEXTEPLAYER3)),))
 		self.player_options("exteplayer3", "serviceexteplayer3", config_list)
+		config_list.append((_("Debug"), config_serviceapp.debug, _("Turn on debug messages")))
 		self["config"].list = config_list
 
 	def keySave(self):
@@ -252,15 +254,14 @@ class ServiceAppDetectPlayers(Screen):
 	skin = """
 		<screen position="center,center" size="500,340" title="ServiceApp - player check">
 			<widget name="text" position="10,10" size="490,325" font="Regular;28" halign="center" valign="center" />
-		</screen>
-				"""
+		</screen>"""
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
 		self["text"] = Label()
 		self.players_iter = iter(
 			[
-				("gstplayer_gst-1.0", _("Detecting gstreamer player ..."), self.detect_gstplayer),
+				("gstplayer2", _("Detecting gstreamer player ..."), self.detect_gstplayer),
 				("exteplayer3", _("Detecting exteplayer3 player ..."), self.detect_exteplayer3),
 			]
 		)

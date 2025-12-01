@@ -228,7 +228,7 @@ int PlayerBackend::stop()
 	{
 		// wait 10 seconds for normal exit if timed out then kill process
 		mWaitForStop = true;
-		WaitThread t(mWaitForStopMutex, mWaitForStopCond, mWaitForStop, 10000);
+		WaitThread t(mWaitForStopMutex, mWaitForStopCond, mWaitForStop, 3000);
 		t.run();
 		mMessageThread.send(Message(Message::tStop));
 		t.kill();
@@ -431,8 +431,7 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 			break;
 		case Message::tStop:
 			eDebug("PlayerBackend::gotMessage - tStop");
-			mTimer->stop();
-			pPlayer->sendStop();
+			pPlayer->sendForceStop();
 			break;
 		case Message::tKill:
 			eDebug("PlayerBackend::gotMessage - tKill");
@@ -471,7 +470,7 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 			pPlayer->sendUpdateSubtitleTracksList();
 			break;
 		case Message::tGetLength:
-			eDebug("PlayerBackend::gotMessage - tGetLength");
+			// eDebug("PlayerBackend::gotMessage - tGetLength");
 			pPlayer->sendUpdateLength();
 			break;
 		case Message::start:

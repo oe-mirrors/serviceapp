@@ -10,6 +10,7 @@
 #include <lib/base/init.h>
 #include <lib/base/eenv.h>
 #include <lib/base/nconfig.h>
+#include <lib/base/cfile.h>
 #ifdef HAVE_EPG
 #include <lib/dvb/epgcache.h>
 #endif
@@ -21,6 +22,9 @@
 #include "exteplayer3.h"
 
 #include <Python.h>
+
+#include <string>
+#include <lib/base/estring.h>
 
 enum
 {
@@ -237,6 +241,8 @@ eServiceApp::eServiceApp(eServiceReference ref):
 	CONNECT(m_subtitle_sync_timer->timeout, eServiceApp::pushSubtitles);
 	m_event_updated_info_timer = eTimer::create(eApp);
 	CONNECT(m_event_updated_info_timer->timeout, eServiceApp::signalEventUpdatedInfo);
+	m_passthrough_fix_timer = eTimer::create(eApp);
+	CONNECT(m_passthrough_fix_timer->timeout, eServiceApp::passthroughFix);
 
 #ifdef HAVE_EPG
 	m_nownext_timer = eTimer::create(eApp);
@@ -261,6 +267,25 @@ eServiceApp::~eServiceApp()
 };
 
 
+void eServiceApp::passthroughFix()
+{
+	eDebug("[ServiceApp] Setting 'passthrough' to force correct operation");
+	CFile::writeStr("/proc/stb/audio/ac3", "passthrough");
+	bool validposition = false;
+	pts_t ppos = 0;
+	if (getPlayPosition(ppos) >= 0)
+	{
+		validposition = true;
+		ppos -= 90000;
+		if (ppos < 0)
+			ppos = 0;
+	}
+	if (validposition)
+	{
+		/* flush */
+		seekTo(ppos);
+	}
+}
 
 void eServiceApp::fillSubservices()
 {
@@ -580,6 +605,17 @@ void eServiceApp::signalEventUpdatedInfo()
 {
 	eDebug("eServiceApp::signalEventUpdatedInfo");
     m_event(this, evUpdatedInfo);
+	bool is_passthrough_fix_enabled = eConfigManager::getConfigBoolValue("config.plugins.serviceapp.passthrough_fix_enable", false);
+	if (is_passthrough_fix_enabled)
+	{
+		std::string pass = CFile::read("/proc/stb/audio/ac3");
+		if (replace_all(replace_all(pass, "\r", ""), "\n", "") == "passthrough")
+		{
+			int passthrough_delay = eConfigManager::getConfigIntValue("config.plugins.serviceapp.passthrough_fix_delay", 0);
+			m_passthrough_fix_timer->stop();
+			m_passthrough_fix_timer->start(passthrough_delay, true);
+		}
+	}
 }
 
 void eServiceApp::urlResolved(int success)
@@ -675,11 +711,7 @@ void eServiceApp::gotExtPlayerMessage(int message)
 
 
 // __iPlayableService
-#if SIGCXX_MAJOR_VERSION == 2
-RESULT eServiceApp::connectEvent(const sigc::slot2< void, iPlayableService*, int >& event, ePtr< eConnection >& connection)
-#else
-RESULT eServiceApp::connectEvent(const Slot2< void, iPlayableService*, int >& event, ePtr< eConnection >& connection)
-#endif
+RESULT eServiceApp::connectEvent(const sigc::slot<void(iPlayableService*,int)>& event, ePtr< eConnection >& connection)
 {
 	connection = new eConnection((iPlayableService*)this, m_event.connect(event));
 	return 0;
@@ -1321,6 +1353,20 @@ std::string eServiceApp::getInfoString(int w)
 {
 	switch (w)
 	{
+	case sVideoInfo:
+	{
+		char buff[100];
+		snprintf(buff, sizeof(buff), "%d|%d|%d|%d|%d|%d",
+				m_width,
+				m_height,
+				m_framerate,
+				m_progressive,
+				getInfo(sAspect),
+				-1
+				);
+		std::string videoInfo = buff;
+		return videoInfo;
+	}
 	case sProvider:
 		return m_ref.path.find("://") != std::string::npos ? "IPTV" : "FILE";
 	case sServiceref:

@@ -138,7 +138,20 @@ std::vector<std::string> ExtEplayer3::buildCommand()
 	std::vector<std::string> args;
 	args.push_back("exteplayer3");
 	size_t pos = mPath.find("&suburi=");
-	if (pos != std::string::npos)
+	size_t pos1 = mPath.find("&cenc_decryption_key=");
+	if (pos1 != std::string::npos)
+	{
+		args.push_back(mPath.substr(0, pos1));
+		args.push_back("-f");
+		args.push_back(mPath.substr((pos1) + 1,52));
+		if (pos != std::string::npos)
+		{
+			args.push_back(mPath.substr(0, pos));
+			args.push_back("-x");
+			args.push_back(mPath.substr(pos + 8));
+		}
+	}
+	else if (pos != std::string::npos)
 	{
 		args.push_back(mPath.substr(0, pos));
 		args.push_back("-x");

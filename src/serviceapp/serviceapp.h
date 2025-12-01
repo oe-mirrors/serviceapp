@@ -27,11 +27,7 @@ struct eServiceAppOptions
 						   connectionSpeedInKb(std::numeric_limits<unsigned int>::max()){};
 };
 
-#if SIGCXX_MAJOR_VERSION == 2
 class eServiceApp : public sigc::trackable,
-#else
-class eServiceApp : public Object,
-#endif
 					public iPlayableService,
 					public iPauseableService,
 					public iSeekableService,
@@ -51,11 +47,7 @@ class eServiceApp : public Object,
 	bool m_subservices_checked;
 	void fillSubservices();
 
-#if SIGCXX_MAJOR_VERSION == 2
-	sigc::signal2<void, iPlayableService *, int> m_event;
-#else
-	Signal2<void, iPlayableService *, int> m_event;
-#endif
+	sigc::signal<void(iPlayableService*,int)> m_event;
 	eServiceAppOptions *options;
 	PlayerBackend *player;
 	BasePlayer *extplayer;
@@ -83,6 +75,7 @@ class eServiceApp : public Object,
 	SubtitleManager m_subtitle_manager;
 	pts_t m_prev_subtitle_fps;
 	ePtr<eTimer> m_event_updated_info_timer;
+	ePtr<eTimer> m_passthrough_fix_timer;
 
 	pts_t m_prev_decoder_time;
 	int m_decoder_time_valid_state;
@@ -96,6 +89,7 @@ class eServiceApp : public Object,
 	void pushSubtitles();
 	void signalEventUpdatedInfo();
 	void urlResolved(int success);
+	void passthroughFix();
 
 #ifdef HAVE_EPG
 	ePtr<eTimer> m_nownext_timer;
@@ -109,11 +103,7 @@ public:
 	~eServiceApp();
 
 	// iPlayableService
-#if SIGCXX_MAJOR_VERSION == 2
-	RESULT connectEvent(const sigc::slot2<void, iPlayableService *, int> &event, ePtr<eConnection> &connection);
-#else
-	RESULT connectEvent(const Slot2<void, iPlayableService *, int> &event, ePtr<eConnection> &connection);
-#endif
+	RESULT connectEvent(const sigc::slot<void(iPlayableService*,int)> &event, ePtr<eConnection> &connection);
 	RESULT start();
 	RESULT stop();
 #if OPENPLI_ISERVICE_VERSION > 1

@@ -35,7 +35,7 @@ EXTEPLAYER3_VERSION = None
 
 config.plugins.serviceapp = ConfigSubsection()
 config_serviceapp = config.plugins.serviceapp
-config_serviceapp.debug = ConfigBoolean(default=False)
+config_serviceapp.debug = ConfigYesNo(default=False)
 
 config_serviceapp.servicemp3 = ConfigSubsection()
 config_serviceapp.servicemp3.replace = ConfigBoolean(default=False, descriptions={False: _("original"), True: _("serviceapp")})

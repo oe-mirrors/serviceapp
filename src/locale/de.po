@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-02 17:17+0100\n"
-"PO-Revision-Date: 2025-12-02 17:04+0100\n"
+"PO-Revision-Date: 2025-12-02 20:40+0100\n"
 "Last-Translator: Masta2002\n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -60,7 +60,7 @@ msgstr "DTS Software Decodierung"
 
 #: ../plugin/plugin.py:223
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: ../plugin/plugin.py:265
 msgid "Detecting exteplayer3 player ..."
@@ -246,7 +246,7 @@ msgstr "Aktiviere die automatische Auswahl von Streams entsprechend der eingeste
 
 #: ../plugin/plugin.py:223
 msgid "Turn on debug messages"
-msgstr ""
+msgstr "Debug Meldungen aktivieren"
 
 #: ../plugin/plugin.py:175
 msgid "Turn on downmix to stereo, when software decoding is in use"

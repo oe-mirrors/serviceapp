@@ -28,7 +28,7 @@ msgstr "Dekodowanie programowe AC3"
 
 #: ../plugin/plugin.py:189
 msgid "AC3+ Passthrough fix delay"
-msgstr ""
+msgstr "Naprawione opóźnienie AC3+ Passthrough"
 
 #: ../plugin/plugin.py:182
 msgid "Auto select stream"
@@ -60,7 +60,7 @@ msgstr "Dekodowanie programowe DTS"
 
 #: ../plugin/plugin.py:223
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: ../plugin/plugin.py:265
 msgid "Detecting exteplayer3 player ..."
@@ -80,11 +80,11 @@ msgstr "Osadzone napisy"
 
 #: ../plugin/plugin.py:187
 msgid "Enable AC3+ passthrough fix"
-msgstr ""
+msgstr "Włącz poprawkę AC3+ passthrough"
 
 #: ../plugin/plugin.py:187
 msgid "Enables AC3+ passthrough fix for Vu+ Ultimo4K / Duo4KSE."
-msgstr ""
+msgstr "Włącza poprawkę AC3+ passthrough dla Vu+ Ultimo4K / Duo4KSE."
 
 #: ../plugin/plugin.py:206
 msgid "Enigma2 playback system"
@@ -122,7 +122,7 @@ msgstr "Dekodowanie programowe MP3"
 
 #: ../plugin/plugin.py:71
 msgid "No"
-msgstr ""
+msgstr "Nie"
 
 #: ../plugin/plugin.py:351
 msgid "Play with ServiceExtEplayer3"
@@ -145,9 +145,8 @@ msgid "Select sink which you want to use."
 msgstr "Wybierz źródło, które chcesz użyć."
 
 #: ../plugin/plugin.py:189
-#, fuzzy
 msgid "Select the delay that will be used for AC3+ Passthrough fix."
-msgstr "Wybierz odtwarzacz, który będzie używany do odtwarzania Enigma2."
+msgstr "Wybierz opóźnienie, które zostanie użyte do naprawy protokołu AC3+ Passthrough."
 
 #: ../plugin/plugin.py:206
 msgid "Select the player which will be used for Enigma2 playback."
@@ -247,7 +246,7 @@ msgstr "Włącz automatyczny wybór strumieni zgodnie z ustawioną prędkością
 
 #: ../plugin/plugin.py:223
 msgid "Turn on debug messages"
-msgstr ""
+msgstr "Włącz komunikaty debugowania"
 
 #: ../plugin/plugin.py:175
 msgid "Turn on downmix to stereo, when software decoding is in use"
@@ -296,4 +295,4 @@ msgstr "ustaw ramy odtwarzacza"
 #: ../plugin/plugin.py:195 ../plugin/plugin.py:200
 #, python-format
 msgid "version %s"
-msgstr ""
+msgstr "wersja %s"

@@ -11,7 +11,7 @@ msgstr ""
 "POT-Creation-Date: 2025-12-02 17:17+0100\n"
 "PO-Revision-Date: 2024-11-08 10:24+0000\n"
 "Last-Translator: pololoko111 <www.sat-4-all.com>\n"
-"Language-Team: ChatGPT <chatgpt.com>\n"
+"Language-Team: \n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -28,7 +28,7 @@ msgstr "Dekodowanie programowe AC3"
 
 #: ../plugin/plugin.py:189
 msgid "AC3+ Passthrough fix delay"
-msgstr "Naprawione opóźnienie AC3+ Passthrough"
+msgstr "Opóźnienie AC3+ Passthrough fix"
 
 #: ../plugin/plugin.py:182
 msgid "Auto select stream"
@@ -80,11 +80,11 @@ msgstr "Osadzone napisy"
 
 #: ../plugin/plugin.py:187
 msgid "Enable AC3+ passthrough fix"
-msgstr "Włącz poprawkę AC3+ passthrough"
+msgstr "Włącz AC3+ passthrough fix"
 
 #: ../plugin/plugin.py:187
 msgid "Enables AC3+ passthrough fix for Vu+ Ultimo4K / Duo4KSE."
-msgstr "Włącza poprawkę AC3+ passthrough dla Vu+ Ultimo4K / Duo4KSE."
+msgstr "Włącza AC3+ passthrough fix dla Vu+ Ultimo4K / Duo4KSE."
 
 #: ../plugin/plugin.py:206
 msgid "Enigma2 playback system"
@@ -102,7 +102,7 @@ msgstr ""
 
 #: ../plugin/plugin.py:195
 msgid "ExtEplayer3"
-msgstr "ExtEplayer3"
+msgstr "ExtePlayer3"
 
 #: ../plugin/plugin.py:200
 msgid "GstPlayer"
@@ -126,11 +126,11 @@ msgstr "Nie"
 
 #: ../plugin/plugin.py:351
 msgid "Play with ServiceExtEplayer3"
-msgstr "Odtwarzaj z ServiceExtEplayer3"
+msgstr "Odtwarzaj z ExtePlayer3"
 
 #: ../plugin/plugin.py:353
 msgid "Play with ServiceGstPlayer"
-msgstr "Odtwarzaj z ServiceGstPlayer"
+msgstr "Odtwarzaj z GstPlayer"
 
 #: ../plugin/plugin.py:208
 msgid "Player"
@@ -146,7 +146,7 @@ msgstr "Wybierz źródło, które chcesz użyć."
 
 #: ../plugin/plugin.py:189
 msgid "Select the delay that will be used for AC3+ Passthrough fix."
-msgstr "Wybierz opóźnienie, które zostanie użyte do naprawy protokołu AC3+ Passthrough."
+msgstr "Wybierz opóźnienie, które zostanie użyte dla AC3+ Passthrough fix."
 
 #: ../plugin/plugin.py:206
 msgid "Select the player which will be used for Enigma2 playback."
@@ -164,17 +164,17 @@ msgstr "ServiceApp"
 #: ../plugin/plugin.py:221
 #, python-format
 msgid "ServiceExtEplayer3 (%s)"
-msgstr "ServiceExtEplayer3 (%s)"
+msgstr "ExtePlayer3 (%s)"
 
 #: ../plugin/plugin.py:218
 #, python-format
 msgid "ServiceGstPlayer (%s)"
-msgstr "ServiceGstPlayer (%s)"
+msgstr "GstPlayer (%s)"
 
 #: ../plugin/plugin.py:211
 #, python-format
 msgid "ServiceMp3 (%s)"
-msgstr "ServiceMp3 (%s)"
+msgstr "Mp3 (%s)"
 
 #: ../plugin/plugin.py:166
 msgid "Set buffer duration in seconds."

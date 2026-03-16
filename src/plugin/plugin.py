@@ -208,17 +208,17 @@ class ServiceAppSettings(Setup):
 			config_list.append((_("Player"), config_serviceapp.servicemp3.player, _("Select the player which will be used in serviceapp for Enigma2 playback.")))
 			self.serviceapp_passthrough_options(config_list)
 			config_list.append(self.spacer)
-			config_list.append((_("ServiceMp3 (%s)" % str(serviceapp_client.ID_SERVICEMP3)),))
+			config_list.append((_("ServiceMp3 (%s)") % str(serviceapp_client.ID_SERVICEMP3),))
 			if config_serviceapp.servicemp3.player.value == "gstplayer":
 				self.player_options("gstplayer", "servicemp3", config_list)
 			elif config_serviceapp.servicemp3.player.value == "exteplayer3":
 				self.player_options("exteplayer3", "servicemp3", config_list)
 		self.serviceapp_passthrough_options(config_list)
 		config_list.append(self.spacer)
-		config_list.append((_("ServiceGstPlayer (%s)" % str(serviceapp_client.ID_SERVICEGSTPLAYER)),))
+		config_list.append((_("ServiceGstPlayer (%s)") % str(serviceapp_client.ID_SERVICEGSTPLAYER),))
 		self.player_options("gstplayer", "servicegstplayer", config_list)
 		config_list.append(self.spacer)
-		config_list.append((_("ServiceExtEplayer3 (%s)" % str(serviceapp_client.ID_SERVICEEXTEPLAYER3)),))
+		config_list.append((_("ServiceExtEplayer3 (%s)") % str(serviceapp_client.ID_SERVICEEXTEPLAYER3),))
 		self.player_options("exteplayer3", "serviceexteplayer3", config_list)
 		config_list.append((_("Debug"), config_serviceapp.debug, _("Turn on debug messages")))
 		self["config"].list = config_list

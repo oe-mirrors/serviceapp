@@ -16,6 +16,7 @@
 #include <lib/dvb/epgcache.h>
 #endif
 #include <lib/dvb/idvb.h>
+#include <lib/dvb/db.h>
 #include <lib/gui/esubtitle.h>
 
 #include "exteplayer3.h"
@@ -189,6 +190,16 @@ eServiceApp::eServiceApp(eServiceReference ref)
 	options = createOptions(ref);
 	if (!ref.alternativeurl.empty())
 		m_ref.path = ref.alternativeurl;
+	// Keep the original service identity, even if a resolver changes its URL.
+	m_audioCacheReference = replace_all(ref.toString(), ",", "_");
+	if (eSettings::audio_usecache && !getHeaders(m_ref.path).count("sapp_audio_id")) {
+		for (const auto& service : eDVBDB::getInstance()->iptv_services) {
+			if (service->m_reference_str == m_audioCacheReference) {
+				m_cachedAudioTrack = service->getCacheEntry(eDVBService::cMPEGAPID);
+				break;
+			}
+		}
+	}
 
 	extplayer = createPlayer(ref, getHeaders(m_ref.path));
 	player = new PlayerBackend(extplayer);
@@ -540,9 +551,14 @@ void eServiceApp::gotExtPlayerMessage(int message) {
 			if (m_debug)
 				eDebug("eServiceApp::gotExtPlayerMessage - start");
 			m_event_updated_info_timer->start(1000, true);
+			if (m_cachedAudioTrack >= 0)
+				player->audioGetNumberOfTracks(0); // Asynchronous; do not wait on the GUI thread.
 #ifdef HAVE_EPG
 			updateEpgCacheNowNext();
 #endif
+			break;
+		case PlayerMessage::audioTracksAvailable:
+			restoreAudioTrack();
 			break;
 		case PlayerMessage::stop:
 			if (m_debug)
@@ -564,6 +580,7 @@ void eServiceApp::gotExtPlayerMessage(int message) {
 			if (m_debug)
 				eDebug("eServiceApp::gotExtPlayerMessage - resume");
 			m_paused = false;
+			restoreAudioTrack();
 			break;
 		case PlayerMessage::error:
 			if (m_debug)
@@ -788,6 +805,33 @@ RESULT eServiceApp::isCurrentlySeekable() {
 
 
 // __iAudioTrackSelection
+void eServiceApp::restoreAudioTrack() {
+	if (m_paused || m_cachedAudioTrack < 0)
+		return;
+	audioStream track;
+	if (player->audioGetTrackInfo(track, m_cachedAudioTrack) < 0)
+		return; // GstPlayer can report a partial list before discovering all tracks.
+	const int wanted = m_cachedAudioTrack;
+	m_cachedAudioTrack = -1;
+	// Translate the saved list index to the player's stream ID. A missing track
+	// leaves the player's default/language selection intact and keeps the cache.
+	player->audioSelectTrack(wanted);
+}
+
+void eServiceApp::saveAudioTrack(int track) {
+	auto& services = eDVBDB::getInstance()->iptv_services;
+	for (const auto& service : services) {
+		if (service->m_reference_str == m_audioCacheReference) {
+			service->setCacheEntry(eDVBService::cMPEGAPID, track);
+			return;
+		}
+	}
+	ePtr<eDVBService> service = new eDVBService;
+	service->m_reference_str = m_audioCacheReference;
+	service->setCacheEntry(eDVBService::cMPEGAPID, track);
+	services.push_back(service);
+}
+
 int eServiceApp::getNumberOfTracks() {
 	eDebug("eServiceApp::getNumberOfTracks");
 	return player->audioGetNumberOfTracks(500);
@@ -796,9 +840,20 @@ int eServiceApp::getNumberOfTracks() {
 RESULT eServiceApp::selectTrack(unsigned int i) {
 	if (m_debug)
 		eDebug("eServiceApp::selectTrack = %d", i);
+	if (m_paused) {
+		audioStream track;
+		if (player->audioGetTrackInfo(track, i) < 0)
+			return -1;
+		// GstPlayer may reset a selector changed in PAUSED when it resumes.
+		m_cachedAudioTrack = i;
+		saveAudioTrack(i);
+		return 0;
+	}
 	if (player->audioSelectTrack(i) < 0) {
 		return -1;
 	}
+	m_cachedAudioTrack = -1;
+	saveAudioTrack(i);
 	return 0;
 }
 

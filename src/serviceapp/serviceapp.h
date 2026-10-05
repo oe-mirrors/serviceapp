@@ -35,6 +35,10 @@ class eServiceApp : public sigc::trackable,
 	DECLARE_REF(eServiceApp);
 
 	eServiceReference m_ref;
+	std::string m_audioCacheReference;
+	int m_cachedAudioTrack = -1;
+	void restoreAudioTrack();
+	void saveAudioTrack(int track);
 
 	std::vector<eServiceReference> m_subserviceref_vec;
 	std::vector<M3U8StreamInfo> m_subservice_vec;

@@ -62,6 +62,7 @@ struct PlayerMessage
 		videoProgressiveChanged,
 		videoFramerateChanged,
 		subtitleAvailable,
+		audioTracksAvailable,
 	};
 };
 

@@ -528,6 +528,7 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 		case Message::audioList:
 			if(mDebug)
 				eDebug("PlayerBackend::gotMessage - audioList");
+			gotPlayerMessage(PlayerMessage::audioTracksAvailable);
 			break;
 		case Message::error:
 			if(mDebug)
@@ -610,8 +611,11 @@ void PlayerBackend::recvResumed(int status)
 
 void PlayerBackend::recvAudioTracksList(int status, std::vector<audioStream>& streams)
 {
-	if(!status) 
+	if(!status)
+	{
 		mAudioStreams = streams;
+		mMessageMain.send(Message(Message::audioList));
+	}
 	recvMessage();
 }
 

@@ -54,6 +54,7 @@ class ExtEplayer3: public PlayerApp, public BasePlayer
 
 	int sendStop();
 	int sendForceStop();
+	int sendKill();
 	int sendPause();
 	int sendResume();
 	int sendUpdateLength();

@@ -54,6 +54,7 @@ class ExtEplayer3: public PlayerApp, public BasePlayer
 
 	int sendStop();
 	int sendForceStop();
+	int sendKill();
 	int sendPause();
 	int sendResume();
 	int sendUpdateLength();
@@ -66,5 +67,6 @@ class ExtEplayer3: public PlayerApp, public BasePlayer
 	int sendSubtitleSelectTrack(int trackId);
 	int sendSeekTo(int seconds);
 	int sendSeekRelative(int seconds);
+	int sendFastForward(int speed);
 };
 #endif

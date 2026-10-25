@@ -40,6 +40,7 @@ protected:
 	int processStart(eMainloop *context);
 	int processSend(const std::string& data);
 	void processKill();
+	void processForceKill();
 	bool processRunning();
 public:
 	PlayerApp(int parseOutput=STD_ERROR):
@@ -63,6 +64,8 @@ struct PlayerMessage
 		videoFramerateChanged,
 		subtitleAvailable,
 		audioTracksAvailable,
+		windStart,
+		windEnd,
 	};
 };
 
@@ -102,6 +105,7 @@ class iPlayerSend
 public:
 	virtual int sendStop() { return -1;}
 	virtual int sendForceStop() { return -1;}
+	virtual int sendKill() { return -1;}
 	virtual int sendPause(){ return -1;}
 	virtual int sendResume(){ return -1;}
 	virtual int sendUpdateLength(){ return -1;}
@@ -114,6 +118,8 @@ public:
 	virtual int sendSubtitleSelectTrack(int trackId){ return -1;}
 	virtual int sendSeekTo(int seconds){ return -1;}
 	virtual int sendSeekRelative(int seconds){ return -1;}
+	// speed > 1 winds forwards, < 0 backwards
+	virtual int sendFastForward(int speed){ return -1;}
 };
 
 
@@ -137,6 +143,8 @@ public:
 	virtual void recvSubtitleMessage(subtitleMessage&){};
 	virtual void recvVideoTrackCurrent(int status, videoStream&){};
 	virtual void recvErrorMessage(errorMessage&){};
+	// winding reached the start (direction < 0) or the end
+	virtual void recvWindEnd(int direction){};
 };
 
 
@@ -147,6 +155,8 @@ class BasePlayer: public iPlayerSend, public iPlayerCallback
 protected:
 	std::string mPath;
 	std::map<std::string, std::string> mHeaders;
+	// the player announced that it can wind
+	bool mCanWind = false;
 
 	void recvStarted(int status){pCallback->recvStarted(status);};
 	void recvStopped(int status){pCallback->recvStopped(status);};
@@ -165,12 +175,14 @@ protected:
 	void recvSeekTo(int status, int seconds){pCallback->recvSeekTo(status, seconds);};
 	void recvSeekRelative(int status, int seconds){pCallback->recvSeekRelative(status, seconds);};
 	void recvErrorMessage(errorMessage& message){pCallback->recvErrorMessage(message);};
+	void recvWindEnd(int direction){pCallback->recvWindEnd(direction);};
 public:
 	virtual ~BasePlayer(){}
 
 	void setCallback(iPlayerCallback *cb){pCallback = cb;}
 	void setPath(const std::string& path){mPath = path;}
 	void setHttpHeaders(const std::map<std::string, std::string>& headers){mHeaders = headers;}
+	bool canWind() const {return mCanWind;}
 
 	virtual int start(eMainloop *context) = 0;
 
@@ -190,6 +202,7 @@ class PlayerBackend: public sigc::trackable, public eThread, public eMainloop, p
 			stop,
 			tStop,
 			tKill,
+			tForceKill,
 			pause,
 			tPause,
 			resume,
@@ -198,6 +211,7 @@ class PlayerBackend: public sigc::trackable, public eThread, public eMainloop, p
 			tSeekTo,
 			seekRelative,
 			tSeekRelative,
+			tFastForward,
 			audioSelect,
 			tAudioSelect,
 			audioList,
@@ -212,6 +226,8 @@ class PlayerBackend: public sigc::trackable, public eThread, public eMainloop, p
 			videoFramerateChanged,
 			videoProgressiveChanged,
 			subtitleAvailable,
+			windStart,
+			windEnd,
 			error,
 		};
 		Message(int type)
@@ -278,6 +294,7 @@ class PlayerBackend: public sigc::trackable, public eThread, public eMainloop, p
 	void recvSeekRelative(int status, int seconds){eDebug("PlayerBackend::recvSeekRelative %ds", seconds);}
 	void recvErrorMessage(errorMessage& message){pErrorMessage = new errorMessage(message);};
 	void recvSubtitleMessage(subtitleMessage& sub);
+	void recvWindEnd(int direction){mMessageMain.send(Message(direction < 0 ? Message::windStart : Message::windEnd));}
 
 public:
 	PlayerBackend(BasePlayer* extplayer):
@@ -328,6 +345,8 @@ public:
 	int resume();
 	int seekTo(int seconds);
 	int seekRelative(int seconds);
+	int fastForward(int speed);
+	bool canWind(){return pPlayer->canWind();}
 	int getLength(int& mseconds);
 	int getPlayPosition(int& mseconds);
 	int getErrorMessage(errorMessage& error);

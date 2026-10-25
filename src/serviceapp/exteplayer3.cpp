@@ -252,8 +252,18 @@ int ExtEplayer3::start(eMainloop *context)
 
 int ExtEplayer3::sendStop(){ return processSend(std::string("q\n"));}
 int ExtEplayer3::sendForceStop(){ processKill(); return 0;}
+int ExtEplayer3::sendKill(){ processForceKill(); return 0;}
 int ExtEplayer3::sendPause(){ return processSend(std::string("p\n"));}
 int ExtEplayer3::sendResume(){ return processSend(std::string("c\n"));}
+int ExtEplayer3::sendFastForward(int speed)
+{
+	std::stringstream sstm;
+	if (speed < 0)
+		sstm << "b" << -speed << std::endl;
+	else
+		sstm << "f" << speed << std::endl;
+	return processSend(sstm.str());
+}
 int ExtEplayer3::sendUpdateLength(){ return processSend(std::string("l\n"));}
 int ExtEplayer3::sendUpdatePosition(){ return processSend(std::string("j\n"));}
 int ExtEplayer3::sendUpdateAudioTracksList(){ return processSend(std::string("al\n"));}
@@ -461,6 +471,15 @@ void ExtEplayer3::handleJsonOutput(cJSON *json)
 			return;
 		}
 		recvSeekRelative(1, 0);
+	}
+	else if (!strcmp(key, "PLAYBACK_TRICK_END"))
+	{
+		recvWindEnd(cJSON_GetObjectItem(value, "dir")->valueint);
+	}
+	else if (!strcmp(key, "EPLAYER3_EXTENDED"))
+	{
+		cJSON *trick = cJSON_GetObjectItem(value, "trick");
+		mCanWind = trick && trick->valueint;
 	}
 	else
 	{

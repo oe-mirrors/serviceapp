@@ -8,6 +8,7 @@
 #include <lib/base/eenv.h>
 #include <lib/base/esettings.h>
 #include <lib/base/esimpleconfig.h>
+#include <lib/base/nconfig.h>
 #include <lib/base/init.h>
 #include <lib/base/init_num.h>
 #include <lib/components/file_eraser.h>
@@ -522,6 +523,8 @@ void eServiceApp::signalEventUpdatedInfo() {
 	if (m_debug)
 		eDebug("eServiceApp::signalEventUpdatedInfo");
 	m_event(this, evUpdatedInfo);
+	// the player knows by now whether the stream has a length
+	m_event(this, evSeekableStatusChanged);
 	bool is_passthrough_fix_enabled = eSimpleConfig::getBool("config.plugins.serviceapp.passthrough_fix_enable", false);
 	if (is_passthrough_fix_enabled) {
 		std::string pass = CFile::read("/proc/stb/audio/ac3");
@@ -618,6 +621,12 @@ void eServiceApp::gotExtPlayerMessage(int message) {
 			m_event(this, evVideoProgressiveChanged);
 			break;
 		}
+		case PlayerMessage::windStart:
+			m_event(this, evSOF);
+			break;
+		case PlayerMessage::windEnd:
+			m_event(this, evEOF);
+			break;
 		case PlayerMessage::subtitleAvailable:
 			if (m_debug)
 				eDebug("eServiceApp::gotExtPlayerMessage - subtitleAvailable");
@@ -734,7 +743,9 @@ RESULT eServiceApp::setSlowMotion(int ratio) {
 
 RESULT eServiceApp::setFastForward(int ratio) {
 	eDebug("eServiceApp::setFastForward - ratio = %d", ratio);
-	return -1;
+	if (ratio == 0 || ratio == 1)
+		return player->resume();
+	return player->fastForward(ratio);
 }
 
 
@@ -752,7 +763,10 @@ RESULT eServiceApp::getLength(pts_t& pts) {
 RESULT eServiceApp::seekTo(pts_t to) {
 	eDebug("eServiceApp::seekTo - position = %lld", to);
 	pts_t length;
-	if (to < 0) {
+	if (to == -1 && player->canWind() && getLength(length) == 0 && length > 90000) {
+		/* winding reached the end: a second before it */
+		to = length - 90000;
+	} else if (to < 0) {
 		to = 0;
 	} else if (getLength(length) < 0) {
 		eWarning("eServiceApp::seekTo - cannot get length");
@@ -799,7 +813,17 @@ RESULT eServiceApp::setTrickmode(int trick) {
 RESULT eServiceApp::isCurrentlySeekable() {
 	if (m_debug)
 		eDebug("eServiceApp::isCurrentlySeekable");
-	/* just assume that seeking and fast/slow winding are possible */
+	/* a player that winds itself does it at every speed and backwards (bit 4)
+	 * unless the user wants jumps; for the others just assume that seeking and
+	 * fast/slow winding are possible */
+	/* a live network stream has no length, a VOD stream has one;
+	 * -2: the player runs but has no length */
+	int lengthMs;
+	if (m_ref.path.find("://") != std::string::npos && player->getLength(lengthMs) == -2)
+		return 0;
+	pts_t length;
+	if (player->canWind() && getLength(length) == 0 && length > 0)
+		return eConfigManager::getConfigBoolValue("config.seek.withjumps", true) ? 3 : 7;
 	return 3;
 }
 

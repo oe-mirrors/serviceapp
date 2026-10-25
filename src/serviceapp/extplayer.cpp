@@ -143,6 +143,14 @@ void PlayerApp::processKill()
 	}
 }
 
+void PlayerApp::processForceKill()
+{
+	if (console && console->running())
+	{
+		console->sendKill();
+	}
+}
+
 bool PlayerApp::processRunning()
 {
 	return console ? console->running() : false;
@@ -234,7 +242,17 @@ int PlayerBackend::stop()
 		t.kill();
 		if (t.isTimedOut())
 		{
+			/* the join in kill() blocks the main loop until the app ends,
+			 * a SIGKILL follows when it ignores SIGINT */
+			mWaitForStop = true;
+			WaitThread t2(mWaitForStopMutex, mWaitForStopCond, mWaitForStop, 2000);
+			t2.run();
 			mMessageThread.send(Message(Message::tKill));
+			t2.kill();
+			if (t2.isTimedOut())
+			{
+				mMessageThread.send(Message(Message::tForceKill));
+			}
 		}
 	}
 	kill();
@@ -246,6 +264,14 @@ int PlayerBackend::pause()
 	if (!playbackStarted)
 		return -1;
 	mMessageThread.send(Message(Message::tPause));
+	return 0;
+}
+
+int PlayerBackend::fastForward(int speed)
+{
+	if (!playbackStarted || !pPlayer->canWind())
+		return -1;
+	mMessageThread.send(Message(Message::tFastForward, speed));
 	return 0;
 }
 
@@ -441,6 +467,11 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 				eDebug("PlayerBackend::gotMessage - tKill");
 			pPlayer->sendForceStop();
 			break;
+		case Message::tForceKill:
+			if(mDebug)
+				eDebug("PlayerBackend::gotMessage - tForceKill");
+			pPlayer->sendKill();
+			break;
 		case Message::tPause:
 			if(mDebug)
 				eDebug("PlayerBackend::gotMessage - tPause");
@@ -450,6 +481,11 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 			if(mDebug)
 				eDebug("PlayerBackend::gotMessage - tUnpause");
 			pPlayer->sendResume();
+			break;
+		case Message::tFastForward:
+			if(mDebug)
+				eDebug("PlayerBackend::gotMessage - tFastForward");
+			pPlayer->sendFastForward(message.dataInt);
 			break;
 		case Message::tSeekTo:
 			if(mDebug)
@@ -534,6 +570,12 @@ void PlayerBackend::gotMessage(const PlayerBackend::Message& message)
 			if(mDebug)
 				eDebug("PlayerBackend::gotMessage - error");
 			gotPlayerMessage(PlayerMessage::error);
+			break;
+		case Message::windStart:
+			gotPlayerMessage(PlayerMessage::windStart);
+			break;
+		case Message::windEnd:
+			gotPlayerMessage(PlayerMessage::windEnd);
 			break;
 		case Message::subtitleAvailable:
 			if(mDebug)
